@@ -19,3 +19,12 @@
 
 # Go workspace file
 go.work
+
+# .idea config
+.idea/
+# .vscode config
+.vscode/
+# log file
+*.log
+# build dir
+build/
