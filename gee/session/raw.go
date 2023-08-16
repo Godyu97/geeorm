@@ -2,19 +2,27 @@ package session
 
 import (
 	"database/sql"
+	"github.com/Godyu97/geeorm/gee/dialect"
+	"github.com/Godyu97/geeorm/gee/schema"
 	"github.com/Godyu97/geeorm/log"
 	"strings"
 )
 
 // Session 负责与数据库的交互
 type Session struct {
-	db      *sql.DB
-	sql     strings.Builder
-	sqlVars []any
+	db       *sql.DB
+	dialect  dialect.Dialect
+	refTable *schema.Schema
+	sql      strings.Builder
+	sqlVars  []any
 }
 
-func New(db *sql.DB) *Session {
-	return &Session{db: db}
+func New(db *sql.DB, dialect dialect.Dialect) *Session {
+	return &Session{
+		db:      db,
+		dialect: dialect,
+		sqlVars: make([]any, 0),
+	}
 }
 
 func (s *Session) Clear() {
