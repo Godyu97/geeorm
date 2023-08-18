@@ -18,3 +18,5 @@ geektutu orm learn
 	- `(reflect.Type).Name()` 返回类名(字符串)。
 
 	- `(reflect.Type).Field(i)` 获取第 i 个成员变量。
+
+* 基本思想：通过链式调用，构造sql语句，给sql.Exec执行
