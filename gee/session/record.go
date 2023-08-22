@@ -7,6 +7,7 @@ import (
 )
 
 func (s *Session) Insert(values ...any) (int64, error) {
+	s.CallMethod(BeforeInsert, nil) //hooks
 	recordValues := make([]any, 0)
 	table := s.Model(values[0]).RefTable()
 	s.clause.Set(clause.INSERT, table.Name, table.FieldNames)
@@ -19,10 +20,12 @@ func (s *Session) Insert(values ...any) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterInsert, nil)
 	return result.RowsAffected()
 }
 
 func (s *Session) Find(values any) error {
+	s.CallMethod(BeforeQuery, nil) //hooks
 	destSlice := reflect.Indirect(reflect.ValueOf(values))
 	destType := destSlice.Type().Elem()
 	table := s.Model(reflect.New(destType).Elem().Interface()).RefTable()
@@ -43,6 +46,7 @@ func (s *Session) Find(values any) error {
 			return err
 		}
 		destSlice.Set(reflect.Append(destSlice, dest))
+		s.CallMethod(AfterQuery, dest.Addr().Interface())
 	}
 	return nil
 }
@@ -63,6 +67,7 @@ func (s *Session) First(value any) error {
 // support map[string]interface{}
 // also support kv list: "Name", "Tom", "Age", 18, ....
 func (s *Session) Update(kv ...any) (int64, error) {
+	s.CallMethod(BeforeUpdate, nil)
 	m, ok := kv[0].(map[string]any)
 	if !ok {
 		m = make(map[string]any)
@@ -76,16 +81,19 @@ func (s *Session) Update(kv ...any) (int64, error) {
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterUpdate, nil)
 	return result.RowsAffected()
 }
 
 func (s *Session) Delete() (int64, error) {
+	s.CallMethod(BeforeDelete, nil)
 	s.clause.Set(clause.DELETE, s.RefTable().Name)
 	sql, vars := s.clause.Build(clause.DELETE, clause.WHERE)
 	result, err := s.Raw(sql, vars...).Exec()
 	if err != nil {
 		return 0, err
 	}
+	s.CallMethod(AfterDelete, nil)
 	return result.RowsAffected()
 }
 

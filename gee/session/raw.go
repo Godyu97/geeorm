@@ -12,12 +12,23 @@ import (
 // Session 负责与数据库的交互
 type Session struct {
 	db       *sql.DB
+	tx       *sql.Tx
 	dialect  dialect.Dialect
 	refTable *schema.Schema
 	clause   clause.Clause
 	sql      strings.Builder
 	sqlVars  []any
 }
+
+// CommonDB is a minimal function set of db
+type CommonDB interface {
+	Query(query string, args ...any) (*sql.Rows, error)
+	QueryRow(query string, args ...any) *sql.Row
+	Exec(query string, args ...any) (sql.Result, error)
+}
+
+var _ CommonDB = (*sql.DB)(nil)
+var _ CommonDB = (*sql.Tx)(nil)
 
 func New(db *sql.DB, dialect dialect.Dialect) *Session {
 	return &Session{
@@ -33,7 +44,10 @@ func (s *Session) Clear() {
 	s.clause = clause.Clause{}
 }
 
-func (s *Session) DB() *sql.DB {
+func (s *Session) DB() CommonDB {
+	if s.tx != nil {
+		return s.tx
+	}
 	return s.db
 }
 
