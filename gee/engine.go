@@ -94,8 +94,8 @@ func SliceSub[T comparable](s1 []T, s2 []T) []T {
 }
 
 // Migrate table
-func (e *Engine) Migrate(value interface{}) error {
-	_, err := e.Transaction(func(s *session.Session) (result interface{}, err error) {
+func (e *Engine) Migrate(value any) error {
+	_, err := e.Transaction(func(s *session.Session) (result any, err error) {
 		if !s.Model(value).HasTable() {
 			log.Infof("table %s doesn't exist", s.RefTable().Name)
 			return nil, s.CreateTable()
